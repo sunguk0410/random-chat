@@ -25,9 +25,9 @@ public class ChatController {
     }
 
     @MessageMapping("/message")
-    public ResponseEntity<Void> receiveMessage(@RequestBody ChatMessage chat) {
+    public void receiveMessage(ChatMessage chat) {
         // 메시지를 해당 채팅방 구독자들에게 전송
         template.convertAndSend("/sub/chatroom/1", chat);
-        return ResponseEntity.ok().build();
     }
+
 }

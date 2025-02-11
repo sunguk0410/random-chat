@@ -3,85 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>채팅 애플리케이션</title>
-    <style>
-        .list-item {
-            margin-bottom: 10px;
-        }
-    </style>
+    <title>랜덤 채팅</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 </head>
 <body>
-<div>
-    <ul id="messagesList"></ul>
-    <div>
-        <input type="text" id="inputField" placeholder="메시지를 입력하세요" />
-        <button id="sendButton">입력</button>
-    </div>
-</div>
+<h2>랜덤 채팅</h2>
+<div id="chat"></div>
+<input type="text" id="messageInput" placeholder="메시지를 입력하세요">
+<button onclick="sendMessage()">전송</button>
 
-<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@5.4.1/dist/stomp.umd.min.js"></script>
 <script>
-
-    const messagesList = document.getElementById('messagesList');
-    const inputField = document.getElementById('inputField');
-    const sendButton = document.getElementById('sendButton');
-
     let stompClient = null;
-    let inputValue = '';
 
-    const handleInputChange = (event) => {
-        inputValue = event.target.value;
-    };
-
-    const connect = () => {
-        const socket = new WebSocket("ws://localhost:8080/ws");
+    function connect() {
+        const socket = new SockJS("http://localhost:8080/random");  // SockJS 사용
         stompClient = Stomp.over(socket);
-        stompClient.connect({}, () => {
-            stompClient.subscribe(`/sub/chatroom/1`, (message) => {
-                const newMessage = JSON.parse(message.body);
-                appendMessage(newMessage.message);
+
+        stompClient.connect({}, function () {
+            console.log("웹소켓 연결 성공");
+
+            // 채팅방 구독 (sub/chatroom/1)
+            stompClient.subscribe("/sub/chatroom/1", function (message) {
+                const chatBox = document.getElementById("chat");
+                const msg = JSON.parse(message.body);
+                chatBox.innerHTML += "<p><b>" + msg.name + ":</b> " + msg.message + "</p>";
             });
         });
-    };
+    }
 
-    const appendMessage = (message) => {
-        const messageElement = document.createElement('li');
-        messageElement.classList.add('list-item');
-        messageElement.textContent = message;
-        messagesList.appendChild(messageElement);
-    };
-
-    const sendMessage = () => {
-        if (stompClient && inputValue) {
-            const body = {
-                id: 1,
-                name: "테스트1",
-                message: inputValue
+    function sendMessage() {
+        const input = document.getElementById("messageInput");
+        if (input.value.trim() !== "") {
+            const message = {
+                id: null,
+                name: "익명",
+                message: input.value
             };
-            stompClient.send(`/pub/message`, {}, JSON.stringify(body));
-            inputField.value = '';
-            inputValue = '';
+            stompClient.send("/pub/message", {}, JSON.stringify(message));
+            input.value = ""; // 입력창 초기화
         }
-    };
+    }
 
-    const fetchMessages = async () => {
-        try {
-            const response = await fetch("http://localhost:8080/chat/1");
-            const data = await response.json();
-            data.forEach(item => appendMessage(item.message));
-        } catch (error) {
-            console.error("메시지 가져오기 실패:", error);
-        }
-    };
-
-    window.onload = () => {
-        connect();
-        fetchMessages();
-
-        inputField.addEventListener('input', handleInputChange);
-
-        sendButton.addEventListener('click', sendMessage);
-    };
+    connect();
 </script>
 </body>
 </html>

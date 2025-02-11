@@ -17,6 +17,8 @@ public class ChattingConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/random")
-                .setAllowedOrigins("*");
+                .setAllowedOrigins("*")
+                .withSockJS();  // SockJS 지원 추가
     }
+
 }
