@@ -11,7 +11,12 @@ public class ChatController {
     @MessageMapping("/chat")
     @SendTo("/topic/chatMessage")
     public Chat chat(Chat chat) throws Exception {
-        return new Chat(HtmlUtils.htmlEscape(chat.getContent()));
+        // sender와 content 각각 htmlEscape 처리
+        String escapedSender = HtmlUtils.htmlEscape(chat.getSender());
+        String escapedContent = HtmlUtils.htmlEscape(chat.getContent());
+
+        // 새로운 Chat 객체로 반환
+        return new Chat(escapedSender, escapedContent);
     }
 
 }

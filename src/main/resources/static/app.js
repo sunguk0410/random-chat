@@ -1,3 +1,5 @@
+let currentUser;
+
 const stompClient = new StompJs.Client({
     brokerURL: 'ws://localhost:8080/random-chat'
 });
@@ -6,7 +8,7 @@ stompClient.onConnect = (frame) => {
     setConnected(true);
     console.log('Connected: ' + frame);
     stompClient.subscribe('/topic/chatMessage', (chat) => {
-        showChatMessage(JSON.parse(chat.body).content);
+        showChatMessage(JSON.parse(chat.body));
     });
 };
 
@@ -33,6 +35,8 @@ function setConnected(connected) {
 
 function connect() {
     stompClient.activate();
+    currentUser = generateRandomUsername();
+    console.log(currentUser);
 }
 
 function disconnect() {
@@ -42,20 +46,34 @@ function disconnect() {
 }
 
 function sendChat() {
+    let message = $("#content").val();
+    let sender = currentUser;
+
     stompClient.publish({
         destination: "/app/chat",
-        body: JSON.stringify({'content': $("#content").val()})
+        body: JSON.stringify({'sender': sender, 'content': message})
     });
 }
 
-function showChatMessage(message) {
-    $("#greetings").append("<tr><td>" + message + "</td></tr>");
+
+function generateRandomUsername() {
+    return "User_" + Math.floor(Math.random() * 1000); // 예: User_123
 }
 
+function showChatMessage(chat) {
+    let messageClass = (chat.sender === currentUser) ? "my-message" : "other-message";
+
+    $("#greetings").append(`
+        <div class="${messageClass}">
+            ${chat.content}
+        </div>
+    `);
+}
+
+
 $(function () {
+    connect();
     $("form").on('submit', (e) => e.preventDefault());
-    $( "#connect" ).click(() => connect());
-    $( "#disconnect" ).click(() => disconnect());
     $( "#send" ).click(() => sendChat());
 });
 

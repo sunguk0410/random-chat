@@ -12,3 +12,22 @@ body {
     -moz-border-radius: 5px;
     border-radius: 5px;
 }
+
+.my-message {
+    text-align: left;
+    background-color: #d1e7dd; /* 연한 초록 */
+    padding: 10px;
+    margin: 5px;
+    border-radius: 10px;
+    max-width: 60%;
+}
+
+.other-message {
+    text-align: right;
+    background-color: #f8d7da; /* 연한 빨강 */
+    padding: 10px;
+    margin: 5px;
+    border-radius: 10px;
+    max-width: 60%;
+    margin-left: auto; /* 오른쪽 정렬 */
+}
