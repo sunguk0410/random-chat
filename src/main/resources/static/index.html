@@ -1,51 +1,56 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>랜덤 채팅</title>
-    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <title>Hello WebSocket</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link href="/main.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+    <script src="/app.js"></script>
 </head>
 <body>
-<h2>랜덤 채팅</h2>
-<div id="chat"></div>
-<input type="text" id="messageInput" placeholder="메시지를 입력하세요">
-<button onclick="sendMessage()">전송</button>
 
-<script>
-    let stompClient = null;
+<div id="main-content" class="container">
+    <!-- WebSocket 연결 버튼 -->
+    <div class="row">
+        <div class="col-md-6">
+            <form class="form-inline">
+                <div class="form-group">
+                    <label for="connect">WebSocket connection:</label>
+                    <button id="connect" class="btn btn-default" type="submit">Connect</button>
+                    <button id="disconnect" class="btn btn-default" type="submit" disabled="disabled">Disconnect</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-    function connect() {
-        const socket = new SockJS("http://localhost:8080/random");  // SockJS 사용
-        stompClient = Stomp.over(socket);
+    <!-- 채팅 메시지 테이블 -->
+    <div class="row">
+        <div class="col-md-12">
+            <table id="conversation" class="table table-striped">
+                <thead>
+                <tr>
+                    <th>Chat Messages</th>
+                </tr>
+                </thead>
+                <tbody id="greetings">
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-        stompClient.connect({}, function () {
-            console.log("웹소켓 연결 성공");
-
-            // 채팅방 구독 (sub/chatroom/1)
-            stompClient.subscribe("/sub/chatroom/1", function (message) {
-                const chatBox = document.getElementById("chat");
-                const msg = JSON.parse(message.body);
-                chatBox.innerHTML += "<p><b>" + msg.name + ":</b> " + msg.message + "</p>";
-            });
-        });
-    }
-
-    function sendMessage() {
-        const input = document.getElementById("messageInput");
-        if (input.value.trim() !== "") {
-            const message = {
-                id: null,
-                name: "익명",
-                message: input.value
-            };
-            stompClient.send("/pub/message", {}, JSON.stringify(message));
-            input.value = ""; // 입력창 초기화
-        }
-    }
-
-    connect();
-</script>
+    <!-- 이름 입력 및 메시지 전송 -->
+    <div class="row">
+        <div class="col-md-12">
+            <form>
+                <div class="form-group">
+                    <label for="name">Enter your message:</label>
+                    <input type="text" id="name" class="form-control" placeholder="Type your message...">
+                </div>
+                <button id="send" class="btn btn-primary" type="submit">Send</button>
+            </form>
+        </div>
+    </div>
+</div>
 </body>
 </html>
