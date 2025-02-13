@@ -9,12 +9,14 @@ public class Chat {
 
     private String content;
     private String sender;
+    private String roomId;
 
     public Chat() {
     }
 
-    public Chat(String sender, String content) {
-        this.sender = sender;
+    public Chat(String content, String sender, String roomId) {
         this.content = content;
+        this.sender = sender;
+        this.roomId = roomId;
     }
 }

@@ -1,68 +1,61 @@
 let currentUser;
+let roomId = null; // 매칭된 방 ID
 
 const stompClient = new StompJs.Client({
     brokerURL: 'ws://localhost:8080/random-chat'
 });
 
 stompClient.onConnect = (frame) => {
-    setConnected(true);
     console.log('Connected: ' + frame);
-    stompClient.subscribe('/topic/chatMessage', (chat) => {
-        showChatMessage(JSON.parse(chat.body));
-    });
-};
-
-stompClient.onWebSocketError = (error) => {
-    console.error('Error with websocket', error);
-};
-
-stompClient.onStompError = (frame) => {
-    console.error('Broker reported error: ' + frame.headers['message']);
-    console.error('Additional details: ' + frame.body);
-};
-
-function setConnected(connected) {
-    $("#connect").prop("disabled", connected);
-    $("#disconnect").prop("disabled", !connected);
-    if (connected) {
-        $("#conversation").show();
-    }
-    else {
-        $("#conversation").hide();
-    }
-    $("#greetings").html("");
-}
-
-function connect() {
-    stompClient.activate();
     currentUser = generateRandomUsername();
-    console.log(currentUser);
-}
+    joinRoom(); // 자동으로 방에 입장
+};
 
-function disconnect() {
-    stompClient.deactivate();
-    setConnected(false);
-    console.log("Disconnected");
+function joinRoom() {
+    stompClient.publish({
+        destination: "/app/join",
+        body: currentUser
+    });
+
+    stompClient.subscribe(`/topic/room/${currentUser}`, (response) => {
+        let data = JSON.parse(response.body);
+        if (data.roomId) {
+            showSystemMessage("매칭되었습니다!");
+            roomId = data.roomId;
+            console.log(`Matched with room: ${roomId}`);
+            stompClient.subscribe(`/topic/chat/${roomId}`, (chat) => {
+                showChatMessage(JSON.parse(chat.body));
+            });
+        } else {
+            showSystemMessage("상대를 찾고 있습니다....");
+        }
+    });
 }
 
 function sendChat() {
+    if (!roomId) {
+        alert("아직 상대방과 매칭되지 않았습니다.");
+        return;
+    }
+
     let message = $("#content").val();
-    let sender = currentUser;
 
     stompClient.publish({
-        destination: "/app/chat",
-        body: JSON.stringify({'sender': sender, 'content': message})
+        destination: `/app/chat/${roomId}`,
+        body: JSON.stringify({ sender: currentUser, content: message })
     });
 }
 
-
-function generateRandomUsername() {
-    return "User_" + Math.floor(Math.random() * 1000); // 예: User_123
+function showSystemMessage(message) {
+    $("#greetings").append(`
+        <div class="system-message">
+            ${message}
+        </div>
+    `);
 }
 
 function showChatMessage(chat) {
     let messageClass = (chat.sender === currentUser) ? "my-message" : "other-message";
-
     $("#greetings").append(`
         <div class="${messageClass}">
             ${chat.content}
@@ -70,10 +63,12 @@ function showChatMessage(chat) {
     `);
 }
 
+function generateRandomUsername() {
+    return "User_" + Math.floor(Math.random() * 1000);
+}
 
 $(function () {
-    connect();
+    stompClient.activate();
     $("form").on('submit', (e) => e.preventDefault());
-    $( "#send" ).click(() => sendChat());
+    $("#send").click(() => sendChat());
 });
-

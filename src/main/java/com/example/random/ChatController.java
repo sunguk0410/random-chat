@@ -1,22 +1,45 @@
 package com.example.random;
 
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.*;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.util.HtmlUtils;
+import java.util.*;
 
 @Controller
 public class ChatController {
 
-    @MessageMapping("/chat")
-    @SendTo("/topic/chatMessage")
-    public Chat chat(Chat chat) throws Exception {
-        // sender와 content 각각 htmlEscape 처리
-        String escapedSender = HtmlUtils.htmlEscape(chat.getSender());
-        String escapedContent = HtmlUtils.htmlEscape(chat.getContent());
+    private final SimpMessagingTemplate messagingTemplate;
+    private final Queue<String> waitingUsers = new LinkedList<>();
+    private final Map<String, String> userRoomMap = new HashMap<>();
 
-        // 새로운 Chat 객체로 반환
-        return new Chat(escapedSender, escapedContent);
+    @Autowired
+    public ChatController(SimpMessagingTemplate messagingTemplate) {
+        this.messagingTemplate = messagingTemplate;
     }
 
+    @MessageMapping("/join")
+    public void joinRoom(@Payload String username) {
+        synchronized (this) {
+            if (!waitingUsers.isEmpty()) {
+                String otherUser = waitingUsers.poll();
+                String roomId = UUID.randomUUID().toString();
+                userRoomMap.put(username, roomId);
+                userRoomMap.put(otherUser, roomId);
+
+                // 두 사용자에게 방 정보 전송
+                messagingTemplate.convertAndSend("/topic/room/" + username, new Room(roomId, username, otherUser));
+                messagingTemplate.convertAndSend("/topic/room/" + otherUser, new Room(roomId, otherUser, username));
+            } else {
+                waitingUsers.add(username);
+                messagingTemplate.convertAndSend("/topic/room/" + username, new Room(null, username, null));
+            }
+        }
+    }
+
+    @MessageMapping("/chat/{roomId}")
+    @SendTo("/topic/chat/{roomId}")
+    public ChatMessage sendMessage(@DestinationVariable String roomId, ChatMessage chat) {
+        return new ChatMessage(chat.getSender(), chat.getContent(), roomId);
+    }
 }

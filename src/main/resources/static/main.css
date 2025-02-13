@@ -31,3 +31,10 @@ body {
     max-width: 60%;
     margin-left: auto; /* 오른쪽 정렬 */
 }
+
+.system-message {
+    color: gray;
+    font-style: italic;
+    text-align: center;
+    margin: 5px 0;
+}
