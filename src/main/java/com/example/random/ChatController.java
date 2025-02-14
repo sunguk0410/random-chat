@@ -37,6 +37,27 @@ public class ChatController {
         }
     }
 
+    @MessageMapping("/leave")
+    public void leaveRoom(@Payload String username) {
+        synchronized (this) {
+            String roomId = userRoomMap.remove(username);
+            if (roomId != null) {
+                // 상대방에게 '상대방이 나갔습니다' 메시지 전송
+                for (Map.Entry<String, String> entry : userRoomMap.entrySet()) {
+                    if (entry.getValue().equals(roomId) && !entry.getKey().equals(username)) {
+                        String otherUser = entry.getKey();
+                        messagingTemplate.convertAndSend("/topic/chat/" + roomId,
+                                new ChatMessage("system", "상대방이 나갔습니다.", null));
+                        userRoomMap.remove(otherUser);
+                        break;
+                    }
+                }
+            }
+            waitingUsers.remove(username);
+        }
+    }
+
+
     @MessageMapping("/chat/{roomId}")
     @SendTo("/topic/chat/{roomId}")
     public ChatMessage sendMessage(@DestinationVariable String roomId, ChatMessage chat) {
