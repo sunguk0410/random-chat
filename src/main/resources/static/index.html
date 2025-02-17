@@ -1,57 +1,37 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>random-chat</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="/main.css" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/app.js"></script>
 </head>
 <body>
 
-<div id="main-content" class="container">
-    <!-- WebSocket 연결 버튼 -->
-<!--    <div class="row">-->
-<!--        <div class="col-md-6">-->
-<!--            <form class="form-inline">-->
-<!--                <div class="form-group">-->
-<!--                    <label for="connect">WebSocket connection:</label>-->
-<!--                    <button id="connect" class="btn btn-default" type="submit">Connect</button>-->
-<!--                    <button id="disconnect" class="btn btn-default" type="submit" disabled="disabled">Disconnect</button>-->
-<!--                </div>-->
-<!--            </form>-->
-<!--        </div>-->
-<!--    </div>-->
-
-    <!-- 채팅 메시지 테이블 -->
-    <div class="row">
-        <div class="col-md-12">
-            <table id="conversation" class="table table-striped">
-                <thead>
-                <tr>
-                    <th>채팅방</th>
-                </tr>
-                </thead>
-                <tbody id="greetings">
-                </tbody>
-            </table>
+<div id="main-content" class="container mt-4">
+    <div class="nav">
+        <h4 class="left">채팅방</h4>
+        <div class="right">
+            <a href="/user/signup" class="text-decoration-none">회원가입</a>
+            <a href="/user/login" class="text-decoration-none">로그인</a>
         </div>
     </div>
 
-    <!-- 이름 입력 및 메시지 전송 -->
-    <div class="row">
-        <div class="col-md-12">
-            <form>
-                <div class="form-group">
-                    <label for="content">메시지를 보내세요.</label>
-                    <input type="text" id="content" class="form-control" placeholder="Type your message...">
-                </div>
-                <button id="send" class="btn btn-primary" type="submit">보내기</button>
-            </form>
-        </div>
-    </div>
+
+    <!-- 채팅 메시지 영역 -->
+    <div id="greetings" class="chat-container"></div>
+
+    <!-- 메시지 입력 -->
+    <form id="message-form">
+        <input type="text" id="content" class="form-control" placeholder="메시지를 입력하세요.">
+        <button id="send" class="btn btn-primary" type="submit">보내기</button>
+    </form>
 </div>
+
 </body>
 </html>

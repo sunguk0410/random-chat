@@ -9,13 +9,14 @@ stompClient.onConnect = (frame) => {
     console.log('Connected: ' + frame);
     currentUser = generateRandomUsername();
     joinRoom(); // 자동으로 방에 입장
+
     // 브라우저 종료 시 서버에 알림 전송
-        window.addEventListener('beforeunload', () => {
-            stompClient.publish({
-                destination: "/app/leave",
-                body: currentUser
-            });
+    window.addEventListener('beforeunload', () => {
+        stompClient.publish({
+            destination: "/app/leave",
+            body: currentUser
         });
+    });
 };
 
 function joinRoom() {
@@ -54,9 +55,9 @@ function sendChat() {
     let message = $("#content").val();
 
     if (!message) {
-            alert("메시지를 입력해주세요.");
-            return;
-        }
+        alert("메시지를 입력해주세요.");
+        return;
+    }
 
     stompClient.publish({
         destination: `/app/chat/${roomId}`,
@@ -83,6 +84,9 @@ function showChatMessage(chat) {
             </div>
         </div>
     `);
+
+    // 메시지 추가 시 스크롤을 맨 아래로 이동
+    $("#greetings").scrollTop($("#greetings")[0].scrollHeight);
 }
 
 function generateRandomUsername() {
