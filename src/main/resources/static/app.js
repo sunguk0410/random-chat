@@ -7,8 +7,21 @@ const stompClient = new StompJs.Client({
 
 stompClient.onConnect = (frame) => {
     console.log('Connected: ' + frame);
-    currentUser = generateRandomUsername();
-    joinRoom(); // 자동으로 방에 입장
+
+    // frame에서 user-name 파싱
+    const headers = frame.toString().split('\n');
+    const userNameHeader = headers.find(header => header.startsWith('user-name:'));
+
+    if (userNameHeader) {
+        // user-name: 뒷부분을 추출하여 공백 제거
+        currentUser = userNameHeader.split(':')[1].trim();
+    } else {
+        // user-name 헤더가 없는 경우 랜덤 이름 사용
+        currentUser = generateRandomUsername();
+    }
+
+    console.log('Current user:', currentUser);
+    joinRoom();
 
     // 브라우저 종료 시 서버에 알림 전송
     window.addEventListener('beforeunload', () => {
@@ -76,16 +89,23 @@ function showSystemMessage(message) {
 }
 
 function showChatMessage(chat) {
-    let messageClass = (chat.sender === currentUser) ? "my-message" : "other-message";
-    $("#greetings").append(`
-        <div style="display: flex; justify-content: ${chat.sender === currentUser ? 'flex-start' : 'flex-end'};">
-            <div class="${messageClass}">
-                ${chat.content}
-            </div>
-        </div>
-    `);
+    let isMyMessage = chat.sender === currentUser;
+    let messageClass = isMyMessage ? "my-message" : "other-message";
+    let justifyContent = isMyMessage ? "flex-start" : "flex-end";
 
-    // 메시지 추가 시 스크롤을 맨 아래로 이동
+    let chatHTML = `
+        <div class="message-row" style="display: flex; justify-content: ${justifyContent}; align-items: center;">
+            ${isMyMessage ? `
+                <div class="profile-circle">${chat.sender.charAt(0).toUpperCase()}</div>
+                <div class="${messageClass}">${chat.content}</div>
+            ` : `
+                <div class="${messageClass}">${chat.content}</div>
+                <div class="profile-circle">${chat.sender.charAt(0).toUpperCase()}</div>
+            `}
+        </div>
+    `;
+
+    $("#greetings").append(chatHTML);
     $("#greetings").scrollTop($("#greetings")[0].scrollHeight);
 }
 

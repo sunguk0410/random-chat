@@ -9,25 +9,26 @@
 <body>
 <div class="container mt-5">
     <form th:action="@{/user/signup}" th:object="${userCreateForm}" method="post">
+        <div class="alert alert-danger" role="alert"
+             th:if="${#fields.hasAnyErrors()}">
+            <div th:each="err : ${#fields.allErrors()}" th:text="${err}"></div>
+        </div>
+
         <div class="mb-3">
             <label for="username" class="form-label">사용자ID</label>
             <input type="text" th:field="*{username}" class="form-control">
-            <div class="alert alert-danger" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
-        </div>
-        <div class="mb-3">
-            <label for="password1" class="form-label">비밀번호</label>
-            <input type="password" th:field="*{password1}" class="form-control">
-            <div class="alert alert-danger" th:if="${#fields.hasErrors('password1')}" th:errors="*{password1}"></div>
-        </div>
-        <div class="mb-3">
-            <label for="password2" class="form-label">비밀번호 확인</label>
-            <input type="password" th:field="*{password2}" class="form-control">
-            <div class="alert alert-danger" th:if="${#fields.hasErrors('password2')}" th:errors="*{password2}"></div>
         </div>
         <div class="mb-3">
             <label for="email" class="form-label">이메일</label>
             <input type="email" th:field="*{email}" class="form-control">
-            <div class="alert alert-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+        </div>
+        <div class="mb-3">
+            <label for="password1" class="form-label">비밀번호</label>
+            <input type="password" th:field="*{password1}" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label for="password2" class="form-label">비밀번호 확인</label>
+            <input type="password" th:field="*{password2}" class="form-control">
         </div>
         <button type="submit" class="btn btn-primary">회원가입</button>
     </form>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -17,11 +17,16 @@
     <div class="nav">
         <h4 class="left">채팅방</h4>
         <div class="right">
-            <a href="/user/signup" class="text-decoration-none">회원가입</a>
-            <a href="/user/login" class="text-decoration-none">로그인</a>
+            <div sec:authorize="isAnonymous()" class="text-end">
+                <a href="/user/login" class="text-decoration-none me-2">로그인</a>
+                <a href="/user/signup" class="text-decoration-none">회원가입</a>
+            </div>
+            <div sec:authorize="isAuthenticated()" class="text-end">
+                <a href="/user/logout" class="text-decoration-none">로그아웃</a>
+                <a href="/user/profile" class="text-decoration-none">프로필</a>
+            </div>
         </div>
     </div>
-
 
     <!-- 채팅 메시지 영역 -->
     <div id="greetings" class="chat-container"></div>
