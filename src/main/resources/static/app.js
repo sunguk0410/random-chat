@@ -48,6 +48,7 @@ function joinRoom() {
                 let message = JSON.parse(chat.body);
                 if (message.content === "상대방이 나갔습니다.") {
                     showSystemMessage(message.content);
+                    $("#greetings").scrollTop($("#greetings")[0].scrollHeight);
                     roomId = null;
                 } else {
                     showChatMessage(message);
@@ -91,16 +92,16 @@ function showSystemMessage(message) {
 function showChatMessage(chat) {
     let isMyMessage = chat.sender === currentUser;
     let messageClass = isMyMessage ? "my-message" : "other-message";
-    let justifyContent = isMyMessage ? "flex-start" : "flex-end";
+    let justifyContent = isMyMessage ? "flex-end" : "flex-start";
 
     let chatHTML = `
         <div class="message-row" style="display: flex; justify-content: ${justifyContent}; align-items: center;">
             ${isMyMessage ? `
-                <div class="profile-circle">${chat.sender.charAt(0).toUpperCase()}</div>
                 <div class="${messageClass}">${chat.content}</div>
+                <div class="profile-circle">${chat.sender.charAt(0).toUpperCase()}</div>
             ` : `
-                <div class="${messageClass}">${chat.content}</div>
                 <div class="profile-circle">${chat.sender.charAt(0).toUpperCase()}</div>
+                <div class="${messageClass}">${chat.content}</div>
             `}
         </div>
     `;
@@ -110,7 +111,36 @@ function showChatMessage(chat) {
 }
 
 function generateRandomUsername() {
-    return "User_" + Math.floor(Math.random() * 1000);
+    // UUID v4 생성
+    function uuidv4() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            const r = Math.random() * 16 | 0;
+            const v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+
+    // 타임스탬프 기반 ID 생성
+    function getTimestampId() {
+        return Date.now().toString(36);
+    }
+
+    // 랜덤 문자열 생성 (지정된 길이만큼)
+    function generateRandomString(length) {
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let result = '';
+        for (let i = 0; i < length; i++) {
+            result += characters.charAt(Math.floor(Math.random() * characters.length));
+        }
+        return result;
+    }
+
+    // 최종 사용자명 생성
+    const timestamp = getTimestampId(); // 타임스탬프
+    const randomStr = generateRandomString(4); // 추가 랜덤 문자열
+    const shortUuid = uuidv4().split('-')[0]; // UUID의 첫 부분만 사용
+
+    return `User_${timestamp}_${randomStr}`;
 }
 
 $(function () {
